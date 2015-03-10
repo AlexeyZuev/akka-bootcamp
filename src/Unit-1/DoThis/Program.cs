@@ -11,15 +11,19 @@ namespace WinTail
         static void Main(string[] args)
         {
             // initialize MyActorSystem
-            MyActorSystem = ActorSystem.Create("ActorHuyactor");
+            MyActorSystem = ActorSystem.Create("MyActorSystem");
 
-            PrintInstructions();
-
-            // time to make your first actors!
-            var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleWriterActor()));
-            var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleReaderActor(consoleWriterActor)));
+            Props consoleWriterProps = Props.Create<ConsoleWriterActor>();
+            ActorRef consoleWriterActor = MyActorSystem.ActorOf(consoleWriterProps, "consoleWriterActor");
             
+            Props validationActorProps = Props.Create(() => new ValidationActor(consoleWriterActor));
+            ActorRef validationActor = MyActorSystem.ActorOf(validationActorProps, "validationActor");
+            
+            Props consoleReaderProps = Props.Create<ConsoleReaderActor>(validationActor);
+            ActorRef consoleReaderActor = MyActorSystem.ActorOf(consoleReaderProps, "consoleReaderActor");
+
             // tell console reader to begin
+
             consoleReaderActor.Tell(ConsoleReaderActor.StartCommand);
 
             // blocks the main thread from exiting until the actor system is shut down
