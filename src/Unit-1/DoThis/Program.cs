@@ -15,11 +15,14 @@ namespace WinTail
 
             Props consoleWriterProps = Props.Create<ConsoleWriterActor>();
             ActorRef consoleWriterActor = MyActorSystem.ActorOf(consoleWriterProps, "consoleWriterActor");
-            
-            Props validationActorProps = Props.Create(() => new ValidationActor(consoleWriterActor));
+
+            Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
+            ActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
+
+            Props validationActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
             ActorRef validationActor = MyActorSystem.ActorOf(validationActorProps, "validationActor");
             
-            Props consoleReaderProps = Props.Create<ConsoleReaderActor>(validationActor);
+            Props consoleReaderProps = Props.Create<ConsoleReaderActor>();
             ActorRef consoleReaderActor = MyActorSystem.ActorOf(consoleReaderProps, "consoleReaderActor");
 
             // tell console reader to begin
@@ -30,20 +33,9 @@ namespace WinTail
             MyActorSystem.AwaitTermination();
         }
 
-        private static void PrintInstructions()
+        private void DoPrintInstructions()
         {
-            Console.WriteLine("Write whatever you want into the console!");
-            Console.Write("Some lines will appear as");
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Write(" red ");
-            Console.ResetColor();
-            Console.Write(" and others will appear as");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(" green! ");
-            Console.ResetColor();
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine("Type 'exit' to quit this application at any time.\n");
+            Console.WriteLine("Please provide the URI of a log file on disk.\n");
         }
     }
     #endregion
